@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <title>CLOCK_DOM</title>
+
+</head>
+
+<body>
+    <style>
+        .konteiner {
+            position: relative;
+            margin:0 auto;
+        }
+           
+        .clock {
+            position: absolute;
+            border-radius: 50%;
+            background-color: yellow;
+        }
+        .clockNumber {
+            position: absolute;
+            border-radius: 50%;
+            background-color: green;
+        }
+      
+    </style>
+
+    <script>
+        const CLOCK_NUMBER = 12; //число чисел на циферблате
+        const RADIUS = 300; //радиус часов в пикселях 
+        const SDVIG_STR=0.9;
+        let angleValue = 0; 
+	    let distanceOfDigits = 30; // расстояние в градусах между цифрами на часах
+        let clockRadius=RADIUS*2;
+        let clockNumberRadius=RADIUS*0.3;
+        let clockNumberOkrRadius=RADIUS*0.8;
+        let numberSize=RADIUS*0.2;
+        let strWidth=RADIUS*0.03;
+        let strHeithChas=RADIUS*0.6;
+        let strWidthMin=RADIUS*0.02;
+        let strWidthSek=RADIUS*0.01;
+        let strHeithSek=RADIUS*0.9;
+       
+       const konteiner=document.createElement('div'); //контейнер, в котором часы
+       konteiner.className='konteiner';
+               
+       const clock=document.createElement('div'); //сами часы
+       clock.style.width=clockRadius+'px';
+       clock.style.height=clock.style.width;
+       clock.className='clock';
+       konteiner.appendChild(clock);
+
+       const redCenterX=clock.offsetLeft+RADIUS;
+       const redCenterY=clock.offsetTop+RADIUS;
+       let arrClockNumber = [];
+ 
+       for (let i=1; i<=CLOCK_NUMBER; i++) {
+            arrClockNumber[i]=document.createElement('div'); //кружок, в котором будут цифры
+            arrClockNumber[i].style.width=clockNumberRadius+'px';
+            arrClockNumber[i].style.height=arrClockNumber[i].style.width;
+            arrClockNumber[i].className='clockNumber';
+            clock.appendChild(arrClockNumber[i]);
+            angleValue += distanceOfDigits; // по кругу в цикле продвигаемся на шаг через 30 градусов
+            const angle = angleValue / 180 * Math.PI; // градусы переводим в радианы
+            let greenCenterX=redCenterX+clockNumberOkrRadius*Math.sin(angle);
+            let greenCenterY=redCenterY-clockNumberOkrRadius*Math.cos(angle);
+                     
+            arrClockNumber[i].style.left=Math.round(greenCenterX-clockNumberRadius/2)+'px';
+            arrClockNumber[i].style.top=Math.round(greenCenterY-clockNumberRadius/2)+'px';
+            arrClockNumber[i].innerText=i;
+            arrClockNumber[i].style.fontSize=numberSize/2+'px';
+            arrClockNumber[i].style.lineHeight=clockNumberRadius+'px';
+            arrClockNumber[i].style.textAlign='center';
+        }
+   
+        const strChas=document.createElement('div'); //создаем часовую стрелку и позиционируем
+       strChas.style.width=strWidth+'px';
+       strChas.style.height=strHeithChas+'px';
+       strChas.style.borderRadius=strWidth+'px';
+       strChas.style.backgroundColor='black';
+       strChas.style.position='absolute';
+       konteiner.appendChild(strChas);
+       strChas.style.left=redCenterX-strWidth/2+"px";
+       strChas.style.top=redCenterY-strHeithChas*SDVIG_STR+"px";
+
+       const strMin=document.createElement('div'); //создаем минутную стрелку и позиционируем
+       strMin.style.width=strWidthMin+'px';
+       strMin.style.height=clockNumberOkrRadius+'px';
+       strMin.style.borderRadius=strWidthMin+'px';
+       strMin.style.backgroundColor='black';
+       strMin.style.position='absolute';
+       konteiner.appendChild(strMin);
+       strMin.style.left=redCenterX-strWidthMin/2+"px";
+       strMin.style.top=redCenterY-clockNumberOkrRadius*SDVIG_STR+"px";
+
+       const strSek=document.createElement('div'); //создаем секундную стрелку и позиционируем
+       strSek.style.width=strWidthSek+'px';
+       strSek.style.height=strHeithSek+'px';
+       strSek.style.borderRadius=strWidthSek+'px';
+       strSek.style.backgroundColor='black';
+       strSek.style.position='absolute';
+       konteiner.appendChild(strSek);
+       strSek.style.left=redCenterX-strWidthSek/2+"px";
+       strSek.style.top=redCenterY-strHeithSek*SDVIG_STR+"px";
+
+
+
+       const divNumbClock=document.createElement('div'); // контейнер для цифровых часов
+       divNumbClock.style.fontSize=numberSize+'px';
+       divNumbClock.style.position='absolute';
+       divNumbClock.innerText='00:00:00';
+       konteiner.appendChild(divNumbClock);
+       document.body.appendChild(konteiner);   
+         
+       divNumbClock.style.left=Math.round(RADIUS-divNumbClock.offsetWidth/2)+'px';
+       divNumbClock.style.top=Math.round(RADIUS*2/3-divNumbClock.offsetHeight)+'px';
+
+       function updateTime() {
+            let hours, minutes, seconds;
+            const ANGLE_SEK=360/60; //в полном круге 360градусов, секундная стрелка делает оборот за 60 секунд, значит это 6 градусов в секунду
+            const ANGLE_HOURS=360/12; //часовая стрелка делает оборот за 12 часов
+          
+            let currTime=new Date();
+            let currTimeStr=formatDateTime(currTime);
+            divNumbClock.innerText=currTimeStr; //добавляем в цифровые часы время в правильном формате 
+            
+            strSek.style.transformOrigin='center '+ strHeithSek*0.9+'px'; //сдвигаем нижнюю часть стрелки
+            strSek.style.transform='rotate('+seconds*ANGLE_SEK+'deg)';//задаем угол вращения
+        
+            strMin.style.transformOrigin='center '+clockNumberOkrRadius*0.9+'px ';
+            strMin.style.transform='rotate('+Number(minutes*ANGLE_SEK+(seconds*ANGLE_SEK/60))+'deg)';
+        
+            strChas.style.transformOrigin ='center '+strHeithChas*0.9+'px';
+            strChas.style.transform='rotate('+Number((hours-12)*ANGLE_HOURS+(minutes*ANGLE_HOURS/60))+'deg)';
+              
+            //функция "красивого" для отображения цифровых часов
+            function formatDateTime(dataNow) {
+            hours=dataNow.getHours();
+            minutes=dataNow.getMinutes();
+            seconds=dataNow.getSeconds();
+            return str0l(hours,2) + ':' + str0l(minutes,2) + ':' + str0l(seconds,2);}
+            function str0l(val,len) {
+            let strVal=val.toString();
+            while ( strVal.length < len )
+                strVal='0'+strVal;
+                return strVal;
+            }
+            setTimeout('updateTime()',1000); 
+        }
+    
+    updateTime();
+ 
+    </script>
+</body>
+</html>
